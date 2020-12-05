@@ -13,6 +13,8 @@ public class Game {
     static int snakeRadii = 8;
     static int snakeGrowth = 10;
     static int numberOfBombs = 20;
+    static int bombRadii = 6;
+    static boolean dead = false;
     static int[][] bombMatrix = new int[numberOfBombs][numberOfBombs];
     static int[][] board = new int[H][W];
     static boolean foodAvailable = false;
@@ -32,7 +34,7 @@ public class Game {
     }
     public static void main(String[] args) {
         JFrame f = new JFrame("Snake Game");
-        f.setSize(W, H);
+        f.setSize(W+30, H+30);
         JLabel scoreText = new JLabel("Score: " + score);
         scoreText.setSize(100, 20);
         Console console = new Console();
@@ -77,14 +79,14 @@ public class Game {
             if (snake.food.size() == 0) {
                 boolean foodGiven = false;
                 while (!foodGiven) {
-                    int foodRow = (int) (H * Math.random());
-                    int foodCol = (int) (W * Math.random());
+                    int foodRow = (int) ((H - foodRadii) * Math.random())+foodRadii/2;
+                    int foodCol = (int) ((W - foodRadii) * Math.random()) +foodRadii/2;
                     foodGiven = snake.offerFood(foodRow, foodCol);
                 }
                 foodAvailable = true;
                 f.repaint();
             }
-            if (!bombs && score - prevScore >= 5) {
+            if (!bombs && score - prevScore >= 2) {
                 prevScore = score;
                 snake.setBombMatrix();
                 bombList.clear();
@@ -105,7 +107,7 @@ public class Game {
                 bombs = true;
             }
             MoveResult outcome = snake.moveSnake();
-            if (outcome == MoveResult.hitSelf || outcome == MoveResult.hitBoard) {
+            if (outcome == MoveResult.hitSelf || outcome == MoveResult.hitBoard || dead) {
                 System.out.println("Game Over! " + outcome);
                 break;
             }
@@ -121,6 +123,13 @@ public class Game {
                         bombList.get(i).timer = bombList.get(i).timer - 1;
                         if (bombList.get(i).timer <= 0) {
                             bombList.get(i).blast = true;
+                            if (snake.isOnBomb(i)) {
+                                
+                                   
+                                dead = true;
+                                break;
+                               
+                            }
                             bombList.get(i).setNeighbours();
                             checkBombsBlasted();
                         }

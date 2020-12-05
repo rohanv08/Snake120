@@ -16,23 +16,40 @@ public class Console extends JComponent {
             if (!Game.bombList.get(i).blast) {
                 if (!Game.bombList.get(i).aboutToBlast) {
                     g2d.setColor(Color.BLACK);
-                    g2d.fillRect(Game.bombList.get(i).BombX, Game.bombList.get(i).BombY, 6, 6);
+                    g2d.fillRect(Game.bombList.get(i).BombX, Game.bombList.get(i).BombY, Game.bombRadii,
+                            Game.bombRadii);
                 } else {
                     g2d.setColor(Game.bombList.get(i).prevColor);
-                    g2d.fillRect(Game.bombList.get(i).BombX, Game.bombList.get(i).BombY, 6, 6);
+                    g2d.fillRect(Game.bombList.get(i).BombX, Game.bombList.get(i).BombY, Game.bombRadii,
+                            Game.bombRadii);
                     if (Game.bombList.get(i).prevColor == Color.RED) {
                         Game.bombList.get(i).prevColor = Color.YELLOW;
                     } else {
                         Game.bombList.get(i).prevColor = Color.RED;
                     }
                 }
-            } 
+            } else if (!Game.bombList.get(i).blastAnimation) {
+                if (Game.bombList.get(i).blastRadius == Game.bombList.get(i).animationRadius) {
+                    Game.bombList.get(i).blastAnimation = true;
+                    g2d.setColor(Color.WHITE);
+                    g2d.fillOval(Game.bombList.get(i).BombX + Game.bombRadii / 2 - Game.bombList.get(i).animationRadius/2,
+                            Game.bombList.get(i).BombY + Game.bombRadii / 2 - Game.bombList.get(i).animationRadius/2,
+                            Game.bombList.get(i).animationRadius, Game.bombList.get(i).animationRadius);
+                } else {
+                    g2d.setColor(Color.black);
+                    Game.bombList.get(i).animationRadius++;
+                    g2d.fillOval(Game.bombList.get(i).BombX + Game.bombRadii / 2 - Game.bombList.get(i).animationRadius/2,
+                            Game.bombList.get(i).BombY + Game.bombRadii / 2 - Game.bombList.get(i).animationRadius/2,
+                            Game.bombList.get(i).animationRadius, Game.bombList.get(i).animationRadius);
+                }
+
+            }
         }
         for (int i = 0; i < Game.numberOfBombs && Game.bombs; i++) {
 
             for (int j = i; j < Game.numberOfBombs; j++) {
                 if (Game.bombMatrix[i][j] == 1 && (!Game.bombList.get(i).blast && !Game.bombList.get(j).blast)) {
-                    g2d.setColor(Color.gray);
+                    g2d.setColor(Color.LIGHT_GRAY);
                     g2d.drawLine(Game.bombList.get(i).BombX, Game.bombList.get(i).BombY, Game.bombList.get(j).BombX,
                             Game.bombList.get(j).BombY);
                 }
@@ -79,7 +96,6 @@ public class Console extends JComponent {
             }
         }
 
-        
         for (Iterator<Food> food = Game.snake.food.iterator(); food.hasNext();) {
             Food temp = food.next();
             g2d.setColor(temp.color);

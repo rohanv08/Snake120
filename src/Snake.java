@@ -10,7 +10,7 @@ enum MoveResult {
 };
 
 public class Snake {
-    public boolean inRadius(int x1, int x2, int y1, int y2) {
+    public boolean inRadius(int x1, int x2, int y1, int y2, int radii) {
         // 1- food, 2 - snake
         switch (currDirection) {
         case UP:
@@ -18,7 +18,7 @@ public class Snake {
             if (y1 != y2) {
                 return false;
             } else if (x2 >= x1) {
-                if (x2 - x1 < Game.foodRadii) {
+                if (x2 - x1 < radii) {
                     return true;
                 } else {
                     return false;
@@ -36,7 +36,7 @@ public class Snake {
             if (x1 != x2) {
                 return false;
             } else if (y2 >= y1) {
-                if (y2 - y1 < Game.foodRadii) {
+                if (y2 - y1 < radii) {
                     return true;
                 } else {
                     return false;
@@ -224,9 +224,16 @@ public class Snake {
             return MoveResult.hitSelf;
 
         MoveResult outcome = MoveResult.moved;
+        for (int i = 0 ; i < Game.numberOfBombs && Game.bombs; i++) {
+            if (inRadius(head.col1, Game.bombList.get(i).BombX, head.row1, Game.bombList.get(i).BombY, Game.bombRadii)
+                    || inRadius(head.col2, Game.bombList.get(i).BombX, head.row2, Game.bombList.get(i).BombY, Game.bombRadii)) {
+                outcome = MoveResult.hitBoard;
+                return outcome;
+            }
+        }
         for (int i = 0; i < food.size(); i++) {
-            if (inRadius(head.col1, food.get(i).col, head.row1, food.get(i).row)
-                    || inRadius(head.col2, food.get(i).col, head.row2, food.get(i).row)) {
+            if (inRadius(head.col1, food.get(i).col, head.row1, food.get(i).row, Game.foodRadii)
+                    || inRadius(head.col2, food.get(i).col, head.row2, food.get(i).row, Game.foodRadii)) {
                 Game.score += food.get(i).score;
                 food.remove(i);
                 for (int ii = 0; ii < Game.snakeGrowth; ii++) {
@@ -317,9 +324,16 @@ public class Snake {
             return MoveResult.hitSelf;
 
         MoveResult outcome = MoveResult.moved;
+        for (int i = 0 ; i < Game.numberOfBombs && Game.bombs; i++) {
+            if (inRadius(head.col1, Game.bombList.get(i).BombX, head.row1, Game.bombList.get(i).BombY, Game.bombRadii)
+                    || inRadius(head.col2, Game.bombList.get(i).BombX, head.row2, Game.bombList.get(i).BombY, Game.bombRadii)) {
+                outcome = MoveResult.hitBoard;
+                return outcome;
+            }
+        }
         for (int i = 0; i < food.size(); i++) {
-            if (inRadius(head.col1, food.get(i).col, head.row1, food.get(i).row)
-                    || inRadius(head.col2, food.get(i).col, head.row2, food.get(i).row)) {
+            if (inRadius(head.col1, food.get(i).col, head.row1, food.get(i).row, Game.foodRadii)
+                    || inRadius(head.col2, food.get(i).col, head.row2, food.get(i).row, Game.foodRadii)) {
                 Game.score += food.get(i).score;
                 food.remove(i);
 
@@ -428,11 +442,62 @@ public class Snake {
         return outcome;
     }
 
-    /*public boolean isOnBomb(int bombNumber) {
+    public boolean inRadiusBomb(int x, int y, int bombNumber) {
+        int x1 = Game.bombList.get(bombNumber).BombX + Game.bombRadii / 2;
+        int y1 = Game.bombList.get(bombNumber).BombY + Game.bombRadii / 2;
+        if ((x - x1) * (x - x1) + (y - y1) * (y - y1) <= Game.bombList.get(bombNumber).blastRadius*Game.bombList.get(bombNumber).blastRadius/4) {
+            return true;
+        }
+        return false;
+    }
+
+    public boolean isOnBomb(int bombNumber) {
+
         Iterator<SnakeSegment> it = segments.iterator();
         while (it.hasNext()) {
-           // if (it.)
+            SnakeSegment temp = it.next();
+            switch (temp.dir) {
+            case UP: {
+                for (int i = temp.row1; i <= temp.row2; i++) {
+                    for (int j = 0; j <= Game.snakeRadii; j++) {
+                        if (inRadiusBomb(temp.col1+j, i, bombNumber)) {
+                            return true;
+                        }
+                    }
+                }
+            }
+            case DOWN: {
+                for (int i = temp.row1; i <= temp.row2; i++) {
+                    for (int j = 0; j <= Game.snakeRadii; j++) {
+                        if (inRadiusBomb(temp.col1 +j, i, bombNumber)) {
+                            return true;
+                        }
+                    }
+                }
+            }
+            case LEFT: {
+                for (int i = temp.col1; i <= temp.col2; i++) {
+                    for (int j = 0; j <= Game.snakeRadii; j++) {
+                        if (inRadiusBomb(i, temp.row1 + j, bombNumber)) {
+                            return true;
+                        }
+                    }
+                }
+
+            }
+            case RIGHT: {
+                for (int i = temp.col1; i <= temp.col2; i++) {
+                    for (int j = 0; j <= Game.snakeRadii; j++) {
+                        if (inRadiusBomb(i, temp.row1 + j, bombNumber)) {
+                            return true;
+                        }
+                    }
+                }
+                
+            }
+            }
         }
-        
-    }*/
+        return false;
+
+    }
 }
