@@ -13,6 +13,16 @@ public class Console extends JComponent {
         g2d.setColor(Color.WHITE);
         g2d.fillRect(0, 0, Game.W, Game.H);
         for (int i = 0; i < Game.numberOfBombs && Game.bombs; i++) {
+
+            for (int j = i; j < Game.numberOfBombs; j++) {
+                if (Game.bombMatrix[i][j] == 1 && (!Game.bombList.get(i).blast && !Game.bombList.get(j).blast)) {
+                    g2d.setColor(Color.LIGHT_GRAY);
+                    g2d.drawLine(Game.bombList.get(i).BombX, Game.bombList.get(i).BombY, Game.bombList.get(j).BombX,
+                            Game.bombList.get(j).BombY);
+                }
+            }
+        }
+        for (int i = 0; i < Game.numberOfBombs && Game.bombs; i++) {
             if (!Game.bombList.get(i).blast) {
                 if (!Game.bombList.get(i).aboutToBlast) {
                     g2d.setColor(Color.BLACK);
@@ -45,16 +55,7 @@ public class Console extends JComponent {
 
             }
         }
-        for (int i = 0; i < Game.numberOfBombs && Game.bombs; i++) {
-
-            for (int j = i; j < Game.numberOfBombs; j++) {
-                if (Game.bombMatrix[i][j] == 1 && (!Game.bombList.get(i).blast && !Game.bombList.get(j).blast)) {
-                    g2d.setColor(Color.LIGHT_GRAY);
-                    g2d.drawLine(Game.bombList.get(i).BombX, Game.bombList.get(i).BombY, Game.bombList.get(j).BombX,
-                            Game.bombList.get(j).BombY);
-                }
-            }
-        }
+        
         for (int i = 0; i < Game.H; i++) {
             for (int j = 0; j < Game.W; j++) {
                 if (Game.board[i][j] == 2) {

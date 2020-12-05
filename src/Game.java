@@ -1,4 +1,6 @@
 import java.awt.Container;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.util.LinkedList;
@@ -12,8 +14,9 @@ public class Game {
     static int foodRadii = 8;
     static int snakeRadii = 8;
     static int snakeGrowth = 10;
-    static int numberOfBombs = 20;
+    static int numberOfBombs = 100;
     static int bombRadii = 6;
+    static boolean startGame = false;
     static boolean dead = false;
     static int[][] bombMatrix = new int[numberOfBombs][numberOfBombs];
     static int[][] board = new int[H][W];
@@ -21,26 +24,36 @@ public class Game {
     static boolean bombs = false;
     static LinkedList<Bomb> bombList = new LinkedList<>();
     static Snake snake = new Snake();
-    public static boolean checkBombsBlasted () {
-       for (int i = 0 ; i < bombList.size(); i++)
-       {
-           if (!bombList.get(i).blast) {
-               bombs = true;
-               return true;
-           }
-       }
-       bombs = false;
-       return false;
+
+    public static boolean checkBombsBlasted() {
+        for (int i = 0; i < bombList.size(); i++) {
+            if (!bombList.get(i).blast) {
+                bombs = true;
+                return true;
+            }
+        }
+        bombs = false;
+        return false;
     }
+
     public static void main(String[] args) {
         JFrame f = new JFrame("Snake Game");
-        f.setSize(W+30, H+30);
+        f.setSize(W, H + 30);
+        JButton start = new JButton("New Game");
         JLabel scoreText = new JLabel("Score: " + score);
-        scoreText.setSize(100, 20);
-        Console console = new Console();
         Container cPane = f.getContentPane();
+        scoreText.setSize(100, 20);
+        //cPane.add(start);
+        //start.setBounds(50, 100, 60, 30);
+        
+        //cPane.remove(start);
+        Console console = new Console();
         cPane.add(scoreText);
         cPane.add(console);
+        startGame = true;
+
+        f.repaint();
+        f.setVisible(true);
 
         f.addKeyListener(new KeyListener() {
             @Override
@@ -72,21 +85,22 @@ public class Game {
                 // TODO Auto-generated method stub
             }
         });
-
         f.repaint();
-        f.setVisible(true);
         for (int ii = 0; ii >= 0; ii++) {
+            if (bombs) {
+                prevScore = score;
+            }
             if (snake.food.size() == 0) {
                 boolean foodGiven = false;
                 while (!foodGiven) {
-                    int foodRow = (int) ((H - foodRadii) * Math.random())+foodRadii/2;
-                    int foodCol = (int) ((W - foodRadii) * Math.random()) +foodRadii/2;
+                    int foodRow = (int) ((H - foodRadii) * Math.random()) + foodRadii / 2;
+                    int foodCol = (int) ((W - foodRadii) * Math.random()) + foodRadii / 2;
                     foodGiven = snake.offerFood(foodRow, foodCol);
                 }
                 foodAvailable = true;
                 f.repaint();
             }
-            if (!bombs && score - prevScore >= 2) {
+            if (!bombs && score - prevScore >= 1) {
                 prevScore = score;
                 snake.setBombMatrix();
                 bombList.clear();
@@ -96,14 +110,18 @@ public class Game {
                         int y = (int) (Math.random() * H);
                         if (!snake.isOnSnake(y, x, false)) {
                             bombList.add(new Bomb(y, x, i));
-                            break;
+                            if (snake.isOnBomb(i)) {
+                                bombList.remove(i);
+                            } else {
+                                break;
+                            }
+
                         }
                     }
                 }
                 int a = (int) (Math.random() * numberOfBombs);
                 bombList.get(a).timerActivated = true;
                 bombList.get(a).aboutToBlast = true;
-                System.out.println("Set " + a);
                 bombs = true;
             }
             MoveResult outcome = snake.moveSnake();
@@ -121,14 +139,12 @@ public class Game {
                 for (int i = 0; i < bombList.size(); i++) {
                     if (bombList.get(i).timerActivated) {
                         bombList.get(i).timer = bombList.get(i).timer - 1;
-                        if (bombList.get(i).timer <= 0) {
+                        if (bombList.get(i).timer <= 0 && !bombList.get(i).blast) {
                             bombList.get(i).blast = true;
                             if (snake.isOnBomb(i)) {
-                                
-                                   
+                                bombList.get(i).blast = true;
                                 dead = true;
                                 break;
-                               
                             }
                             bombList.get(i).setNeighbours();
                             checkBombsBlasted();
@@ -138,10 +154,17 @@ public class Game {
                 scoreText.setText("Score: " + score);
                 Thread.sleep(10);
                 f.repaint();
-            } catch (Exception e) {
+            } catch (Exception e1) {
 
             }
+        }
 
+        try {
+            Thread.sleep(10);
+        } catch (InterruptedException e1) {
+            // TODO Auto-generated catch block
+            e1.printStackTrace();
         }
     }
+
 }

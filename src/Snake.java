@@ -100,12 +100,7 @@ public class Snake {
                 connected.add(i);
             }
         }
-        for (int i = 0; i < Game.numberOfBombs; i++) {
-            for (int j = 0; j < Game.numberOfBombs; j++) {
-                System.out.print(Game.bombMatrix[i][j] + " ");
-            }
-            System.out.println();
-        }
+        
     }
 
     public Snake() {
@@ -166,6 +161,7 @@ public class Snake {
 
             case UP:
             case DOWN:
+       
                 if ((head.col1 == temp.col1 || head.col2 == temp.col2) && temp.row1 <= row && row <= temp.row2)
                     return true;
                 break;
@@ -224,9 +220,11 @@ public class Snake {
             return MoveResult.hitSelf;
 
         MoveResult outcome = MoveResult.moved;
-        for (int i = 0 ; i < Game.numberOfBombs && Game.bombs; i++) {
-            if (inRadius(head.col1, Game.bombList.get(i).BombX, head.row1, Game.bombList.get(i).BombY, Game.bombRadii)
-                    || inRadius(head.col2, Game.bombList.get(i).BombX, head.row2, Game.bombList.get(i).BombY, Game.bombRadii)) {
+        for (int i = 0; i < Game.numberOfBombs && Game.bombs; i++) {
+            if ((inRadius(head.col1, Game.bombList.get(i).BombX, head.row1, Game.bombList.get(i).BombY, Game.bombRadii)
+                    || inRadius(head.col2, Game.bombList.get(i).BombX, head.row2, Game.bombList.get(i).BombY,
+                            Game.bombRadii))
+                    && !Game.bombList.get(i).blast) {
                 outcome = MoveResult.hitBoard;
                 return outcome;
             }
@@ -324,9 +322,10 @@ public class Snake {
             return MoveResult.hitSelf;
 
         MoveResult outcome = MoveResult.moved;
-        for (int i = 0 ; i < Game.numberOfBombs && Game.bombs; i++) {
-            if (inRadius(head.col1, Game.bombList.get(i).BombX, head.row1, Game.bombList.get(i).BombY, Game.bombRadii)
-                    || inRadius(head.col2, Game.bombList.get(i).BombX, head.row2, Game.bombList.get(i).BombY, Game.bombRadii)) {
+        for (int i = 0; i < Game.numberOfBombs && Game.bombs; i++) {
+            if ((inRadius(head.col1, Game.bombList.get(i).BombX, head.row1, Game.bombList.get(i).BombY, Game.bombRadii)
+                    || inRadius(head.col2, Game.bombList.get(i).BombX, head.row2, Game.bombList.get(i).BombY,
+                            Game.bombRadii)) && !Game.bombList.get(i).blast) {
                 outcome = MoveResult.hitBoard;
                 return outcome;
             }
@@ -445,11 +444,14 @@ public class Snake {
     public boolean inRadiusBomb(int x, int y, int bombNumber) {
         int x1 = Game.bombList.get(bombNumber).BombX + Game.bombRadii / 2;
         int y1 = Game.bombList.get(bombNumber).BombY + Game.bombRadii / 2;
-        if ((x - x1) * (x - x1) + (y - y1) * (y - y1) <= Game.bombList.get(bombNumber).blastRadius*Game.bombList.get(bombNumber).blastRadius/4) {
+        if ((x - x1) * (x - x1) + (y - y1) * (y - y1) < Game.bombList.get(bombNumber).blastRadius
+                * Game.bombList.get(bombNumber).blastRadius / 4) {
             return true;
         }
         return false;
     }
+    
+   
 
     public boolean isOnBomb(int bombNumber) {
 
@@ -460,7 +462,7 @@ public class Snake {
             case UP: {
                 for (int i = temp.row1; i <= temp.row2; i++) {
                     for (int j = 0; j <= Game.snakeRadii; j++) {
-                        if (inRadiusBomb(temp.col1+j, i, bombNumber)) {
+                        if (inRadiusBomb(temp.col1 + j, i, bombNumber)) {
                             return true;
                         }
                     }
@@ -469,7 +471,7 @@ public class Snake {
             case DOWN: {
                 for (int i = temp.row1; i <= temp.row2; i++) {
                     for (int j = 0; j <= Game.snakeRadii; j++) {
-                        if (inRadiusBomb(temp.col1 +j, i, bombNumber)) {
+                        if (inRadiusBomb(temp.col1 + j, i, bombNumber)) {
                             return true;
                         }
                     }
@@ -493,7 +495,7 @@ public class Snake {
                         }
                     }
                 }
-                
+
             }
             }
         }

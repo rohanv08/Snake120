@@ -14,7 +14,7 @@ public class Bomb {
     public Bomb(int x, int y, int number) {
         this.BombX = x;
         this.BombY = y;
-        this.blastRadius = 40;
+        this.blastRadius = (int)(Math.random()*15) + 25;
         this.number = number;
         this.timer = (int)(Math.random()*500) + 500; 
     }
