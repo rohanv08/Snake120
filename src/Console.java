@@ -17,8 +17,8 @@ public class Console extends JComponent {
             for (int j = i; j < Game.numberOfBombs; j++) {
                 if (Game.bombMatrix[i][j] == 1 && (!Game.bombList.get(i).blast && !Game.bombList.get(j).blast)) {
                     g2d.setColor(Color.LIGHT_GRAY);
-                    g2d.drawLine(Game.bombList.get(i).BombX, Game.bombList.get(i).BombY, Game.bombList.get(j).BombX,
-                            Game.bombList.get(j).BombY);
+                    g2d.drawLine(Game.bombList.get(i).getX(), Game.bombList.get(i).getY(), Game.bombList.get(j).getX(),
+                            Game.bombList.get(j).getY());
                 }
             }
         }
@@ -26,11 +26,11 @@ public class Console extends JComponent {
             if (!Game.bombList.get(i).blast) {
                 if (!Game.bombList.get(i).aboutToBlast) {
                     g2d.setColor(Color.BLACK);
-                    g2d.fillRect(Game.bombList.get(i).BombX, Game.bombList.get(i).BombY, Game.bombRadii,
+                    g2d.fillRect(Game.bombList.get(i).getX(), Game.bombList.get(i).getY(), Game.bombRadii,
                             Game.bombRadii);
                 } else {
                     g2d.setColor(Game.bombList.get(i).prevColor);
-                    g2d.fillRect(Game.bombList.get(i).BombX, Game.bombList.get(i).BombY, Game.bombRadii,
+                    g2d.fillRect(Game.bombList.get(i).getX(), Game.bombList.get(i).getY(), Game.bombRadii,
                             Game.bombRadii);
                     if (Game.bombList.get(i).prevColor == Color.RED) {
                         Game.bombList.get(i).prevColor = Color.YELLOW;
@@ -39,18 +39,18 @@ public class Console extends JComponent {
                     }
                 }
             } else if (!Game.bombList.get(i).blastAnimation) {
-                if (Game.bombList.get(i).blastRadius == Game.bombList.get(i).animationRadius) {
+                if (Game.bombList.get(i).getBlastRadius() == Game.bombList.get(i).getAnimationR()) {
                     Game.bombList.get(i).blastAnimation = true;
                     g2d.setColor(Color.WHITE);
-                    g2d.fillOval(Game.bombList.get(i).BombX + Game.bombRadii / 2 - Game.bombList.get(i).animationRadius/2,
-                            Game.bombList.get(i).BombY + Game.bombRadii / 2 - Game.bombList.get(i).animationRadius/2,
-                            Game.bombList.get(i).animationRadius, Game.bombList.get(i).animationRadius);
+                    g2d.fillOval(Game.bombList.get(i).getX() + Game.bombRadii / 2 - Game.bombList.get(i).getAnimationR()/2,
+                            Game.bombList.get(i).getY() + Game.bombRadii / 2 - Game.bombList.get(i).getAnimationR()/2,
+                            Game.bombList.get(i).getAnimationR(), Game.bombList.get(i).getAnimationR());
                 } else {
                     g2d.setColor(Color.black);
-                    Game.bombList.get(i).animationRadius++;
-                    g2d.fillOval(Game.bombList.get(i).BombX + Game.bombRadii / 2 - Game.bombList.get(i).animationRadius/2,
-                            Game.bombList.get(i).BombY + Game.bombRadii / 2 - Game.bombList.get(i).animationRadius/2,
-                            Game.bombList.get(i).animationRadius, Game.bombList.get(i).animationRadius);
+                    Game.bombList.get(i).increaseAnimationR();
+                    g2d.fillOval(Game.bombList.get(i).getX() + Game.bombRadii / 2 - Game.bombList.get(i).getAnimationR()/2,
+                            Game.bombList.get(i).getY() + Game.bombRadii / 2 - Game.bombList.get(i).getAnimationR()/2,
+                            Game.bombList.get(i).getAnimationR(), Game.bombList.get(i).getAnimationR());
                 }
 
             }
@@ -100,7 +100,7 @@ public class Console extends JComponent {
         for (Iterator<Food> food = Game.snake.food.iterator(); food.hasNext();) {
             Food temp = food.next();
             g2d.setColor(temp.color);
-            g2d.fillRect(temp.col, temp.row, Game.foodRadii, Game.foodRadii);
+            g2d.fillRect(temp.getCol(), temp.getRow(), Game.foodRadii, Game.foodRadii);
         }
 
     }

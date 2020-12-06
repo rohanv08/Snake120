@@ -221,8 +221,8 @@ public class Snake {
 
         MoveResult outcome = MoveResult.moved;
         for (int i = 0; i < Game.numberOfBombs && Game.bombs; i++) {
-            if ((inRadius(head.col1, Game.bombList.get(i).BombX, head.row1, Game.bombList.get(i).BombY, Game.bombRadii)
-                    || inRadius(head.col2, Game.bombList.get(i).BombX, head.row2, Game.bombList.get(i).BombY,
+            if ((inRadius(head.col1, Game.bombList.get(i).getX(), head.row1, Game.bombList.get(i).getY(), Game.bombRadii)
+                    || inRadius(head.col2, Game.bombList.get(i).getX(), head.row2, Game.bombList.get(i).getY(),
                             Game.bombRadii))
                     && !Game.bombList.get(i).blast) {
                 outcome = MoveResult.hitBoard;
@@ -230,9 +230,9 @@ public class Snake {
             }
         }
         for (int i = 0; i < food.size(); i++) {
-            if (inRadius(head.col1, food.get(i).col, head.row1, food.get(i).row, Game.foodRadii)
-                    || inRadius(head.col2, food.get(i).col, head.row2, food.get(i).row, Game.foodRadii)) {
-                Game.score += food.get(i).score;
+            if (inRadius(head.col1, food.get(i).getCol(), head.row1, food.get(i).getRow(), Game.foodRadii)
+                    || inRadius(head.col2, food.get(i).getCol(), head.row2, food.get(i).getRow(), Game.foodRadii)) {
+                Game.score += food.get(i).getScore();
                 food.remove(i);
                 for (int ii = 0; ii < Game.snakeGrowth; ii++) {
                     outcome = expandHead();
@@ -323,17 +323,17 @@ public class Snake {
 
         MoveResult outcome = MoveResult.moved;
         for (int i = 0; i < Game.numberOfBombs && Game.bombs; i++) {
-            if ((inRadius(head.col1, Game.bombList.get(i).BombX, head.row1, Game.bombList.get(i).BombY, Game.bombRadii)
-                    || inRadius(head.col2, Game.bombList.get(i).BombX, head.row2, Game.bombList.get(i).BombY,
+            if ((inRadius(head.col1, Game.bombList.get(i).getX(), head.row1, Game.bombList.get(i).getY(), Game.bombRadii)
+                    || inRadius(head.col2, Game.bombList.get(i).getX(), head.row2, Game.bombList.get(i).getY(),
                             Game.bombRadii)) && !Game.bombList.get(i).blast) {
                 outcome = MoveResult.hitBoard;
                 return outcome;
             }
         }
         for (int i = 0; i < food.size(); i++) {
-            if (inRadius(head.col1, food.get(i).col, head.row1, food.get(i).row, Game.foodRadii)
-                    || inRadius(head.col2, food.get(i).col, head.row2, food.get(i).row, Game.foodRadii)) {
-                Game.score += food.get(i).score;
+            if (inRadius(head.col1, food.get(i).getCol(), head.row1, food.get(i).getRow(), Game.foodRadii)
+                    || inRadius(head.col2, food.get(i).getCol(), head.row2, food.get(i).getRow(), Game.foodRadii)) {
+                Game.score += food.get(i).getScore();
                 food.remove(i);
 
                 for (int ii = 0; ii < Game.snakeGrowth; ii++) {
@@ -442,10 +442,10 @@ public class Snake {
     }
 
     public boolean inRadiusBomb(int x, int y, int bombNumber) {
-        int x1 = Game.bombList.get(bombNumber).BombX + Game.bombRadii / 2;
-        int y1 = Game.bombList.get(bombNumber).BombY + Game.bombRadii / 2;
-        if ((x - x1) * (x - x1) + (y - y1) * (y - y1) < Game.bombList.get(bombNumber).blastRadius
-                * Game.bombList.get(bombNumber).blastRadius / 4) {
+        int x1 = Game.bombList.get(bombNumber).getX() + Game.bombRadii / 2;
+        int y1 = Game.bombList.get(bombNumber).getY() + Game.bombRadii / 2;
+        if ((x - x1) * (x - x1) + (y - y1) * (y - y1) < Game.bombList.get(bombNumber).getBlastRadius()
+                * Game.bombList.get(bombNumber).getBlastRadius()/ 4) {
             return true;
         }
         return false;

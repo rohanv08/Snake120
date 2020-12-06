@@ -3,6 +3,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.awt.event.WindowEvent;
 import java.util.LinkedList;
 import javax.swing.*;
 
@@ -14,7 +15,7 @@ public class Game {
     static int foodRadii = 8;
     static int snakeRadii = 8;
     static int snakeGrowth = 10;
-    static int numberOfBombs = 100;
+    static int numberOfBombs = 20;
     static int bombRadii = 6;
     static boolean startGame = false;
     static boolean dead = false;
@@ -36,22 +37,72 @@ public class Game {
         return false;
     }
 
-    public static void main(String[] args) {
+    public static void main(String[] args)
+    {
+        final JFrame f = new JFrame("Snake Game");
+        Container pane = f.getContentPane();
+        pane.setLayout(new BoxLayout(pane, BoxLayout.Y_AXIS));
+ 
+        JButton button = new JButton("New Game");
+        button.addActionListener(new ActionListener() 
+        {
+            
+            @Override
+            public void actionPerformed(ActionEvent e) 
+            {
+                new Thread(new Runnable() {
+                    
+                    @Override
+                    public void run() 
+                    {
+                        f.dispatchEvent(new WindowEvent(f, WindowEvent.WINDOW_CLOSING));
+                        Start(false);
+                    }
+                }).start();
+                
+            }
+        });
+        pane.add(button);
+        button = new JButton("Load Game");
+        button.addActionListener(new ActionListener() 
+        {
+            
+            @Override
+            public void actionPerformed(ActionEvent e) 
+            {
+                new Thread(new Runnable() {
+                    
+                    @Override
+                    public void run() 
+                    {
+                        f.dispatchEvent(new WindowEvent(f, WindowEvent.WINDOW_CLOSING));
+                        Start(true);
+                    }
+                }).start();
+                
+            }
+        });
+        pane.add(button);
+        
+        f.setSize(W, H+30);
+        f.setVisible(true);
+        
+    }
+    
+    public static void Start(boolean Load) {
         JFrame f = new JFrame("Snake Game");
+        f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         f.setSize(W, H + 30);
-        JButton start = new JButton("New Game");
         JLabel scoreText = new JLabel("Score: " + score);
         Container cPane = f.getContentPane();
         scoreText.setSize(100, 20);
-        //cPane.add(start);
-        //start.setBounds(50, 100, 60, 30);
-        
-        //cPane.remove(start);
         Console console = new Console();
         cPane.add(scoreText);
         cPane.add(console);
         startGame = true;
-
+        if (Load) {
+            System.out.println("Load Game");
+        }
         f.repaint();
         f.setVisible(true);
 
@@ -131,15 +182,15 @@ public class Game {
             }
             try {
                 for (int i = 0; i < snake.food.size(); i++) {
-                    snake.food.get(i).lifetime--;
-                    if (snake.food.get(i).lifetime <= 0) {
+                    snake.food.get(i).decreaseLifetime();
+                    if (snake.food.get(i).getLifetime() <= 0) {
                         snake.food.remove(i);
                     }
                 }
                 for (int i = 0; i < bombList.size(); i++) {
                     if (bombList.get(i).timerActivated) {
-                        bombList.get(i).timer = bombList.get(i).timer - 1;
-                        if (bombList.get(i).timer <= 0 && !bombList.get(i).blast) {
+                        bombList.get(i).decreaseTimer();
+                        if (bombList.get(i).getTimer() <= 0 && !bombList.get(i).blast) {
                             bombList.get(i).blast = true;
                             if (snake.isOnBomb(i)) {
                                 bombList.get(i).blast = true;

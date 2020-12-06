@@ -1,8 +1,7 @@
 import java.awt.Color;
 
 public class Food {
-    int row, col;
-    public int lifetime, score;
+    private int lifetime, score, row, col;
     Color color;
     
     public Food (int row, int col, int score) {
@@ -11,5 +10,20 @@ public class Food {
         this.score = 1;
         this.color = Color.BLUE;
         this.lifetime = 1000;
+    }
+    public void decreaseLifetime() {
+        lifetime--;
+    }
+    public int getLifetime() {
+        return lifetime;
+    }
+    public int getScore() {
+        return score;
+    }
+    public int getRow() {
+        return row;
+    }
+    public int getCol() {
+        return col;
     }
 }
