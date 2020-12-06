@@ -6,7 +6,6 @@ public class Bomb {
     boolean blastAnimation = false;
     Color prevColor = Color.RED;
     public boolean timerActivated = false;
-    boolean aboutToBlast = false;
 
     public Bomb(int x, int y, int number) {
         this.BombX = x;
@@ -16,11 +15,21 @@ public class Bomb {
         this.timer = (int) (Math.random() * 300) + 500;
         animationRadius = 0;
     }
+    
+    public Bomb(int x, int y, int number, int timer, int blastRadius, boolean blast, boolean timerActivated, int animationRadius) {
+        this.BombX = x;
+        this.BombY = y;
+        this.blastRadius = blastRadius;
+        this.number = number;
+        this.timer = timer;
+        this.animationRadius = animationRadius;
+        this.blast = blast;
+        this.timerActivated = timerActivated;
+    }
 
     public void setNeighbours() {
         for (int i = 0; i < Game.numberOfBombs; i++) {
             if (Game.bombMatrix[number][i] == 1) {
-                Game.bombList.get(i).aboutToBlast = true;
                 Game.bombList.get(i).timerActivated = true;
             }
         }
@@ -34,7 +43,7 @@ public class Bomb {
         return BombY;
     }
 
-    public int bombNumber() {
+    public int getNumber() {
         return number;
     }
 

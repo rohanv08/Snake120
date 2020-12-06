@@ -11,6 +11,13 @@ public class Food {
         this.color = Color.BLUE;
         this.lifetime = 1000;
     }
+    public Food (int row, int col, int score, int lifetime) {
+        this.row = row;
+        this.col = col;
+        this.score = 1;
+        this.color = Color.BLUE;
+        this.lifetime = lifetime;
+    }
     public void decreaseLifetime() {
         lifetime--;
     }

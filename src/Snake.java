@@ -2,16 +2,37 @@ import java.util.Iterator;
 import java.util.LinkedList;
 
 enum Direction {
-    UP, DOWN, LEFT, RIGHT
+    UP("UP"), DOWN("DOWN"), LEFT("LEFT"), RIGHT("RIGHT");
+    public final String label;
+
+    private Direction(String label) {
+        this.label = label;
+    }
 };
 
 enum MoveResult {
-    moved, hitBoard, hitSelf, ateFood
+    moved, hitBoard, hitSelf, ateFood, onBomb
 };
 
 public class Snake {
-    public boolean inRadius(int x1, int x2, int y1, int y2, int radii) {
-        // 1- food, 2 - snake
+    private boolean onBomb (int row, int col) {
+        for (int i = -Game.snakeRadii/2; i <= Game.snakeRadii/2; i++) {
+            for (int j = -Game.snakeRadii/2; j <= Game.snakeRadii/2; j++)
+            if (Game.occupancyMatrix[row+i][col+j] == 2) {
+                return true;
+            }
+        }
+        return false;
+        
+    }
+    private boolean checkHitBoard (int row, int col) {
+        if (row + Game.snakeRadii/2 < Game.H && row - Game.snakeRadii/2 >=0 &&
+                col + Game.snakeRadii/2 < Game.W && col - Game.snakeRadii/2 >=0) {
+            return true;
+        }
+        return false;
+    }
+    private boolean inRadius(int x1, int x2, int y1, int y2, int radii) {
         switch (currDirection) {
         case UP:
         case DOWN: {
@@ -55,52 +76,52 @@ public class Snake {
 
     }
 
-    Direction currDirection;
+    private Direction currDirection;
     boolean hasBomb = false;
-    LinkedList<SnakeSegment> segments = new LinkedList<>();
+    private LinkedList<SnakeSegment> segments = new LinkedList<>();
     LinkedList<Food> food = new LinkedList<>();
 
-    boolean offerFood(int foodRow, int foodCol) {
-        if (isOnSnake(foodRow, foodCol, false))
-            return false;
-        food.add(new Food(foodRow, foodCol, 1));
-        return true;
+    public LinkedList<SnakeSegment> getSegments() {
+        return (LinkedList<SnakeSegment>) segments.clone();
     }
 
-    void setBombMatrix() {
-        for (int i = 0; i < Game.numberOfBombs; i++) {
-            for (int j = 0; j < Game.numberOfBombs; j++) {
-                Game.bombMatrix[i][j] = 0;
-            }
-        }
-        for (int i = 0; i < Game.numberOfBombs; i++) {
-            for (int j = i; j < Game.numberOfBombs; j++) {
-                if (i != j && Math.random() >= 0.5) {
-                    Game.bombMatrix[i][j] = 1;
-                    Game.bombMatrix[j][i] = 1; // undirected graph
+    boolean offerFood(int foodRow, int foodCol) {
+        boolean ok = true;
+        for (int i = -Game.foodRadii / 2; i <= Game.foodRadii / 2; i++) {
+            for (int j = -Game.foodRadii / 2; j <= Game.foodRadii / 2; j++) {
+                if (foodRow + i < 0 || foodRow + i >= Game.H || foodCol + j < 0 || foodCol + j >= Game.W) {
+                    ok = false;
+                    break;
                 }
+                Game.occupancyMatrix[foodRow + i][foodCol + j] = 1;
+            }
+            if (!ok) {
+                break;
             }
         }
-
-        LinkedList<Integer> connected = new LinkedList<>();
-        connected.add(0);
-        for (int i = 1; i < Game.numberOfBombs; i++) {
-            boolean isConnected = false;
-            for (int j = 0; j < connected.size(); j++) {
-                if (Game.bombMatrix[i][j] == 1) {
-                    isConnected = true;
-                    connected.add(i);
+        if (!ok) {
+            for (int i = -Game.foodRadii / 2; i <= Game.foodRadii / 2; i++) {
+                for (int j = -Game.foodRadii / 2; j <= Game.foodRadii / 2; j++) {
+                    if (foodRow + i < 0 || foodRow + i >= Game.H || foodCol + j < 0 || foodCol + j >= Game.W) {
+                       return false;
+                    }
+                    Game.occupancyMatrix[foodRow + i][foodCol + j] = 0;
+                }
+                if (!ok) {
                     break;
                 }
             }
-            if (!isConnected) {
-                int a = (int) (Math.random() * connected.size());
-                Game.bombMatrix[i][connected.get(a)] = 1;
-                Game.bombMatrix[connected.get(a)][i] = 1;
-                connected.add(i);
-            }
         }
-        
+        if (isFoodOnSnake()) {
+            for (int i = -Game.foodRadii / 2; i <= Game.foodRadii / 2; i++) {
+                for (int j = -Game.foodRadii / 2; j <= Game.foodRadii / 2; j++) {
+                    Game.occupancyMatrix[foodRow + i][foodCol + j] = 0;
+                }
+            }
+            return false;
+        }
+        food.add(new Food(foodRow, foodCol, 1));
+        return true;
     }
 
     public Snake() {
@@ -109,6 +130,10 @@ public class Snake {
         currDirection = Direction.RIGHT;
     }
 
+    public Snake(LinkedList<SnakeSegment> segments) {
+        this.segments = segments;
+        currDirection = segments.getFirst().dir;
+    }
     void changeDirection(Direction dir) {
         switch (currDirection) {
         case UP:
@@ -153,23 +178,54 @@ public class Snake {
             return false;
         Iterator<SnakeSegment> it = segments.iterator();
         SnakeSegment head = it.next();
-
         while (it.hasNext()) {
             SnakeSegment temp = it.next();
 
             switch (temp.dir) {
-
             case UP:
             case DOWN:
-       
-                if ((head.col1 == temp.col1 || head.col2 == temp.col2) && temp.row1 <= row && row <= temp.row2)
+                if ((head.getCol1() == temp.getCol1() || head.getCol2() == temp.getCol2()) && temp.getRow1() <= row && row <= temp.getRow2())
                     return true;
                 break;
             case LEFT:
             case RIGHT:
-                if ((head.row1 == temp.row1 || head.row2 == temp.row2) && temp.col1 <= col && col <= temp.col2)
+                if ((head.getRow1() == temp.getRow1() || head.getRow2() == temp.getRow2()) && temp.getCol1() <= col && col <= temp.getCol2())
                     return true;
                 break;
+            }
+        }
+        return false;
+    }
+
+    boolean isFoodOnSnake() {
+        Iterator<SnakeSegment> it = segments.iterator();
+        while (it.hasNext()) {
+            SnakeSegment temp = it.next();
+            switch (temp.dir) {
+            case UP:
+            case DOWN:
+                for (int j = temp.getRow1(); j <= temp.getRow2(); j++) {
+                    for (int i = -Game.snakeRadii / 2; i <= Game.snakeRadii / 2; i++) {
+                        if (temp.getCol1() + i < Game.W && temp.getCol1() + i >= 0) {
+                            if (Game.occupancyMatrix[j][temp.getCol1() + i] == 1) {
+                                return true;
+                            }
+                        }
+                    }
+                }
+
+                break;
+            case LEFT:
+            case RIGHT:
+                for (int j = temp.getCol1(); j <= temp.getCol2(); j++) {
+                    for (int i = -Game.snakeRadii / 2; i <= Game.snakeRadii / 2; i++) {
+                        if (temp.getRow1() + i < Game.H && temp.getRow1() + i >= 0) {
+                            if (Game.occupancyMatrix[temp.getRow1() + i][j] == 1) {
+                                return true;
+                            }
+                        }
+                    }
+                }
             }
         }
         return false;
@@ -179,19 +235,19 @@ public class Snake {
         SnakeSegment tail = segments.getLast();
         switch (tail.dir) {
         case UP:
-            tail.row2--;
+            tail.addRow2(-1);
             break;
         case DOWN:
-            tail.row1++;
+            tail.addRow1(1);
             break;
         case LEFT:
-            tail.col2--;
+            tail.addCol2(-1);
             break;
         case RIGHT:
-            tail.col1++;
+            tail.addCol1(1);
             break;
         }
-        if ((tail.row1 > tail.row2) || (tail.col1 > tail.col2)) {
+        if ((tail.getRow1() > tail.getRow2()) || (tail.getCol1() > tail.getCol2())) {
             segments.removeLast();
         }
     }
@@ -200,39 +256,39 @@ public class Snake {
         SnakeSegment head = segments.getFirst();
         switch (head.dir) {
         case UP:
-            head.row1--;
+            head.addRow1(-1);
             break;
         case DOWN:
-            head.row2++;
+            head.addRow2(1);
             break;
         case LEFT:
-            head.col1--;
+            head.addCol1(-1);
             break;
         case RIGHT:
-            head.col2++;
+            head.addCol2(1);
             break;
         }
-        if (head.row1 < 1 || head.row2 >= Game.H - 1)
-            return MoveResult.hitBoard;
-        if (head.col1 < 1 || head.col2 >= Game.W - 1)
-            return MoveResult.hitBoard;
-        if (isOnSnake(head.row2, head.col2, true))
-            return MoveResult.hitSelf;
-
-        MoveResult outcome = MoveResult.moved;
-        for (int i = 0; i < Game.numberOfBombs && Game.bombs; i++) {
-            if ((inRadius(head.col1, Game.bombList.get(i).getX(), head.row1, Game.bombList.get(i).getY(), Game.bombRadii)
-                    || inRadius(head.col2, Game.bombList.get(i).getX(), head.row2, Game.bombList.get(i).getY(),
-                            Game.bombRadii))
-                    && !Game.bombList.get(i).blast) {
-                outcome = MoveResult.hitBoard;
-                return outcome;
-            }
+        if (!(checkHitBoard(head.getRow1(), head.getCol1()) && checkHitBoard(head.getRow2(), head.getCol1()) &&
+                checkHitBoard(head.getRow1(), head.getCol2()) && checkHitBoard(head.getRow2(), head.getCol2()))) {
+            return MoveResult.hitBoard;      
         }
+        if (isOnSnake(head.getRow2(), head.getCol2(), true))
+            return MoveResult.hitSelf;
+        
+        if (onBomb(head.getRow1(), head.getCol1()) || onBomb(head.getRow2(), head.getCol1()) ||
+                onBomb(head.getRow1(), head.getCol2()) || onBomb(head.getRow2(), head.getCol2())) {
+            return MoveResult.onBomb;      
+        }
+        MoveResult outcome = MoveResult.moved;
         for (int i = 0; i < food.size(); i++) {
-            if (inRadius(head.col1, food.get(i).getCol(), head.row1, food.get(i).getRow(), Game.foodRadii)
-                    || inRadius(head.col2, food.get(i).getCol(), head.row2, food.get(i).getRow(), Game.foodRadii)) {
+            if (inRadius(head.getCol1(), food.get(i).getCol(), head.getRow1(), food.get(i).getRow(), Game.foodRadii)
+                    || inRadius(head.getCol2(), food.get(i).getCol(), head.getRow2(), food.get(i).getRow(), Game.foodRadii)) {
                 Game.score += food.get(i).getScore();
+                for (int m = -Game.foodRadii / 2; m <= Game.foodRadii / 2; m++) {
+                    for (int j = -Game.foodRadii / 2; j <= Game.foodRadii / 2; j++) {
+                        Game.occupancyMatrix[food.get(i).getRow() + m][food.get(i).getCol() + j] = 0;
+                    }
+                }
                 food.remove(i);
                 for (int ii = 0; ii < Game.snakeGrowth; ii++) {
                     outcome = expandHead();
@@ -314,26 +370,29 @@ public class Snake {
         }
         segments.addFirst(newHead);
         SnakeSegment head = segments.getFirst();
-        if (head.row1 < 1 || head.row2 >= Game.H - 1)
-            return MoveResult.hitBoard;
-        if (head.col1 < 1 || head.col2 >= Game.W - 1)
-            return MoveResult.hitBoard;
+        if (!(checkHitBoard(head.row1, head.col1) && checkHitBoard(head.row2, head.col1) &&
+                checkHitBoard(head.row1, head.col2) && checkHitBoard(head.row2, head.col2))) {
+            return MoveResult.hitBoard;      
+        }
         if (isOnSnake(head.row2, head.col2, true))
             return MoveResult.hitSelf;
+        
+        if ((onBomb(head.row1, head.col1) || onBomb(head.row2, head.col1) ||
+                onBomb(head.row1, head.col2) || onBomb(head.row2, head.col2))) {
+            return MoveResult.onBomb;      
+        }
 
         MoveResult outcome = MoveResult.moved;
-        for (int i = 0; i < Game.numberOfBombs && Game.bombs; i++) {
-            if ((inRadius(head.col1, Game.bombList.get(i).getX(), head.row1, Game.bombList.get(i).getY(), Game.bombRadii)
-                    || inRadius(head.col2, Game.bombList.get(i).getX(), head.row2, Game.bombList.get(i).getY(),
-                            Game.bombRadii)) && !Game.bombList.get(i).blast) {
-                outcome = MoveResult.hitBoard;
-                return outcome;
-            }
-        }
+        
         for (int i = 0; i < food.size(); i++) {
             if (inRadius(head.col1, food.get(i).getCol(), head.row1, food.get(i).getRow(), Game.foodRadii)
                     || inRadius(head.col2, food.get(i).getCol(), head.row2, food.get(i).getRow(), Game.foodRadii)) {
                 Game.score += food.get(i).getScore();
+                for (int m = -Game.foodRadii / 2; m <= Game.foodRadii / 2; m++) {
+                    for (int j = -Game.foodRadii / 2; j <= Game.foodRadii / 2; j++) {
+                        Game.occupancyMatrix[food.get(i).getRow() + m][food.get(i).getCol() + j] = 0;
+                    }
+                }
                 food.remove(i);
 
                 for (int ii = 0; ii < Game.snakeGrowth; ii++) {
@@ -445,13 +504,11 @@ public class Snake {
         int x1 = Game.bombList.get(bombNumber).getX() + Game.bombRadii / 2;
         int y1 = Game.bombList.get(bombNumber).getY() + Game.bombRadii / 2;
         if ((x - x1) * (x - x1) + (y - y1) * (y - y1) < Game.bombList.get(bombNumber).getBlastRadius()
-                * Game.bombList.get(bombNumber).getBlastRadius()/ 4) {
+                * Game.bombList.get(bombNumber).getBlastRadius() / 4) {
             return true;
         }
         return false;
     }
-    
-   
 
     public boolean isOnBomb(int bombNumber) {
 
