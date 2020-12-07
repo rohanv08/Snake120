@@ -461,7 +461,7 @@ public class Game {
             if (outcome == MoveResult.hitSelf || outcome == MoveResult.hitBoard || dead
                     || outcome == MoveResult.onBomb) {
 
-                for (int i = 0; i <= 20; i++) {
+                for (int i = 0; i <= 30; i++) {
                     try {
                         f.repaint();
                         Thread.sleep(10);

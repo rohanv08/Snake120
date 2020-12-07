@@ -15,8 +15,9 @@ public class Bomb {
         this.timer = (int) (Math.random() * 300) + 500;
         animationRadius = 0;
     }
-    
-    public Bomb(int x, int y, int number, int timer, int blastRadius, boolean blast, boolean timerActivated, int animationRadius) {
+
+    public Bomb(int x, int y, int number, int timer, int blastRadius, boolean blast, boolean timerActivated,
+            int animationRadius) {
         this.BombX = x;
         this.BombY = y;
         this.blastRadius = blastRadius;

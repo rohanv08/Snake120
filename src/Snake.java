@@ -3,6 +3,7 @@ import java.util.LinkedList;
 
 enum Direction {
     UP("UP"), DOWN("DOWN"), LEFT("LEFT"), RIGHT("RIGHT");
+
     public final String label;
 
     private Direction(String label) {
@@ -15,23 +16,25 @@ enum MoveResult {
 };
 
 public class Snake {
-    private boolean onBomb (int row, int col) {
-        for (int i = -Game.snakeRadii/2; i <= Game.snakeRadii/2; i++) {
-            for (int j = -Game.snakeRadii/2; j <= Game.snakeRadii/2; j++)
-            if (Game.occupancyMatrix[row+i][col+j] == 2) {
-                return true;
-            }
+    private boolean onBomb(int row, int col) {
+        for (int i = -Game.snakeRadii / 2; i <= Game.snakeRadii / 2; i++) {
+            for (int j = -Game.snakeRadii / 2; j <= Game.snakeRadii / 2; j++)
+                if (Game.occupancyMatrix[row + i][col + j] == 2) {
+                    return true;
+                }
         }
         return false;
-        
+
     }
-    private boolean checkHitBoard (int row, int col) {
-        if (row + Game.snakeRadii/2 < Game.H && row - Game.snakeRadii/2 >=0 &&
-                col + Game.snakeRadii/2 < Game.W && col - Game.snakeRadii/2 >=0) {
+
+    private boolean checkHitBoard(int row, int col) {
+        if (row + Game.snakeRadii / 2 < Game.H && row - Game.snakeRadii / 2 >= 0 && col + Game.snakeRadii / 2 < Game.W
+                && col - Game.snakeRadii / 2 >= 0) {
             return true;
         }
         return false;
     }
+
     private boolean inRadius(int x1, int x2, int y1, int y2, int radii) {
         switch (currDirection) {
         case UP:
@@ -103,7 +106,7 @@ public class Snake {
             for (int i = -Game.foodRadii / 2; i <= Game.foodRadii / 2; i++) {
                 for (int j = -Game.foodRadii / 2; j <= Game.foodRadii / 2; j++) {
                     if (foodRow + i < 0 || foodRow + i >= Game.H || foodCol + j < 0 || foodCol + j >= Game.W) {
-                       return false;
+                        return false;
                     }
                     Game.occupancyMatrix[foodRow + i][foodCol + j] = 0;
                 }
@@ -132,8 +135,9 @@ public class Snake {
 
     public Snake(LinkedList<SnakeSegment> segments) {
         this.segments = segments;
-        currDirection = segments.getFirst().dir;
+        currDirection = segments.getFirst().getDir();
     }
+
     void changeDirection(Direction dir) {
         switch (currDirection) {
         case UP:
@@ -181,15 +185,17 @@ public class Snake {
         while (it.hasNext()) {
             SnakeSegment temp = it.next();
 
-            switch (temp.dir) {
+            switch (temp.getDir()) {
             case UP:
             case DOWN:
-                if ((head.getCol1() == temp.getCol1() || head.getCol2() == temp.getCol2()) && temp.getRow1() <= row && row <= temp.getRow2())
+                if ((head.getCol1() == temp.getCol1() || head.getCol2() == temp.getCol2()) && temp.getRow1() <= row
+                        && row <= temp.getRow2())
                     return true;
                 break;
             case LEFT:
             case RIGHT:
-                if ((head.getRow1() == temp.getRow1() || head.getRow2() == temp.getRow2()) && temp.getCol1() <= col && col <= temp.getCol2())
+                if ((head.getRow1() == temp.getRow1() || head.getRow2() == temp.getRow2()) && temp.getCol1() <= col
+                        && col <= temp.getCol2())
                     return true;
                 break;
             }
@@ -201,7 +207,7 @@ public class Snake {
         Iterator<SnakeSegment> it = segments.iterator();
         while (it.hasNext()) {
             SnakeSegment temp = it.next();
-            switch (temp.dir) {
+            switch (temp.getDir()) {
             case UP:
             case DOWN:
                 for (int j = temp.getRow1(); j <= temp.getRow2(); j++) {
@@ -233,18 +239,18 @@ public class Snake {
 
     void shrinkTail() {
         SnakeSegment tail = segments.getLast();
-        switch (tail.dir) {
+        switch (tail.getDir()) {
         case UP:
-            tail.addRow2(-1);
+            tail.setRow2(tail.getRow2() - 1);
             break;
         case DOWN:
-            tail.addRow1(1);
+            tail.setRow1(tail.getRow1() + 1);
             break;
         case LEFT:
-            tail.addCol2(-1);
+            tail.setCol2(tail.getCol2() - 1);
             break;
         case RIGHT:
-            tail.addCol1(1);
+            tail.setCol1(tail.getCol1() + 1);
             break;
         }
         if ((tail.getRow1() > tail.getRow2()) || (tail.getCol1() > tail.getCol2())) {
@@ -254,35 +260,36 @@ public class Snake {
 
     MoveResult expandHead() {
         SnakeSegment head = segments.getFirst();
-        switch (head.dir) {
+        switch (head.getDir()) {
         case UP:
-            head.addRow1(-1);
+            head.setRow1(head.getRow1() - 1);
             break;
         case DOWN:
-            head.addRow2(1);
+            head.setRow2(head.getRow2() + 1);
             break;
         case LEFT:
-            head.addCol1(-1);
+            head.setCol1(head.getCol1() - 1);
             break;
         case RIGHT:
-            head.addCol2(1);
+            head.setCol2(head.getCol2() + 1);
             break;
         }
-        if (!(checkHitBoard(head.getRow1(), head.getCol1()) && checkHitBoard(head.getRow2(), head.getCol1()) &&
-                checkHitBoard(head.getRow1(), head.getCol2()) && checkHitBoard(head.getRow2(), head.getCol2()))) {
-            return MoveResult.hitBoard;      
+        if (!(checkHitBoard(head.getRow1(), head.getCol1()) && checkHitBoard(head.getRow2(), head.getCol1())
+                && checkHitBoard(head.getRow1(), head.getCol2()) && checkHitBoard(head.getRow2(), head.getCol2()))) {
+            return MoveResult.hitBoard;
         }
         if (isOnSnake(head.getRow2(), head.getCol2(), true))
             return MoveResult.hitSelf;
-        
-        if (onBomb(head.getRow1(), head.getCol1()) || onBomb(head.getRow2(), head.getCol1()) ||
-                onBomb(head.getRow1(), head.getCol2()) || onBomb(head.getRow2(), head.getCol2())) {
-            return MoveResult.onBomb;      
+
+        if (onBomb(head.getRow1(), head.getCol1()) || onBomb(head.getRow2(), head.getCol1())
+                || onBomb(head.getRow1(), head.getCol2()) || onBomb(head.getRow2(), head.getCol2())) {
+            return MoveResult.onBomb;
         }
         MoveResult outcome = MoveResult.moved;
         for (int i = 0; i < food.size(); i++) {
             if (inRadius(head.getCol1(), food.get(i).getCol(), head.getRow1(), food.get(i).getRow(), Game.foodRadii)
-                    || inRadius(head.getCol2(), food.get(i).getCol(), head.getRow2(), food.get(i).getRow(), Game.foodRadii)) {
+                    || inRadius(head.getCol2(), food.get(i).getCol(), head.getRow2(), food.get(i).getRow(),
+                            Game.foodRadii)) {
                 Game.score += food.get(i).getScore();
                 for (int m = -Game.foodRadii / 2; m <= Game.foodRadii / 2; m++) {
                     for (int j = -Game.foodRadii / 2; j <= Game.foodRadii / 2; j++) {
@@ -308,85 +315,85 @@ public class Snake {
 
     MoveResult newHead() {
         SnakeSegment prevHead = segments.getFirst();
-        SnakeSegment newHead = new SnakeSegment();
-        newHead.dir = currDirection;
+        SnakeSegment newHead = new SnakeSegment(currDirection);
         switch (currDirection) {
         case UP:
-            if (prevHead.dir == Direction.LEFT) {
-                newHead.row1 = prevHead.row1 - 1;
-                newHead.row2 = prevHead.row1 - 1;
-                newHead.col1 = prevHead.col1;
-                newHead.col2 = prevHead.col1;
+            if (prevHead.getDir() == Direction.LEFT) {
+                newHead.setRow1(prevHead.getRow1() - 1);
+                newHead.setRow2(prevHead.getRow1() - 1);
+                newHead.setCol1(prevHead.getCol1());
+                newHead.setCol2(prevHead.getCol1());
             } else // right
             {
-                newHead.row1 = prevHead.row1 - 1;
-                newHead.row2 = prevHead.row1 - 1;
-                newHead.col1 = prevHead.col2;
-                newHead.col2 = prevHead.col2;
+                newHead.setRow1(prevHead.getRow1() - 1);
+                newHead.setRow2(prevHead.getRow1() - 1);
+                newHead.setCol1(prevHead.getCol2());
+                newHead.setCol2(prevHead.getCol2());
             }
             break;
         case DOWN:
-            if (prevHead.dir == Direction.LEFT) {
-                newHead.row1 = prevHead.row1 + 1;
-                newHead.row2 = prevHead.row1 + 1;
-                newHead.col1 = prevHead.col1;
-                newHead.col2 = prevHead.col1;
+            if (prevHead.getDir() == Direction.LEFT) {
+                newHead.setRow1(prevHead.getRow1() + 1);
+                newHead.setRow2(prevHead.getRow1() + 1);
+                newHead.setCol1(prevHead.getCol1());
+                newHead.setCol2(prevHead.getCol1());
             } else // right
             {
-                newHead.row1 = prevHead.row1 + 1;
-                newHead.row2 = prevHead.row1 + 1;
-                newHead.col1 = prevHead.col2;
-                newHead.col2 = prevHead.col2;
+                newHead.setRow1(prevHead.getRow1() + 1);
+                newHead.setRow2(prevHead.getRow1() + 1);
+                newHead.setCol1(prevHead.getCol2());
+                newHead.setCol2(prevHead.getCol2());
             }
             break;
         case LEFT:
-            if (prevHead.dir == Direction.UP) {
-                newHead.row1 = prevHead.row1;
-                newHead.row2 = prevHead.row1;
-                newHead.col1 = prevHead.col1 - 1;
-                newHead.col2 = prevHead.col1 - 1;
+            if (prevHead.getDir() == Direction.UP) {
+                newHead.setRow1(prevHead.getRow1());
+                newHead.setRow2(prevHead.getRow1());
+                newHead.setCol1(prevHead.getCol1() - 1);
+                newHead.setCol2(prevHead.getCol1() - 1);
             } else // down
             {
-                newHead.row1 = prevHead.row2;
-                newHead.row2 = prevHead.row2;
-                newHead.col1 = prevHead.col2 - 1;
-                newHead.col2 = prevHead.col2 - 1;
+                newHead.setRow1(prevHead.getRow2());
+                newHead.setRow2(prevHead.getRow2());
+                newHead.setCol1(prevHead.getCol2() - 1);
+                newHead.setCol2(prevHead.getCol2() - 1);
             }
             break;
         case RIGHT:
-            if (prevHead.dir == Direction.UP) {
-                newHead.row1 = prevHead.row1;
-                newHead.row2 = prevHead.row1;
-                newHead.col1 = prevHead.col1 + 1;
-                newHead.col2 = prevHead.col1 + 1;
+            if (prevHead.getDir() == Direction.UP) {
+                newHead.setRow1(prevHead.getRow1());
+                newHead.setRow2(prevHead.getRow1());
+                newHead.setCol1(prevHead.getCol1() + 1);
+                newHead.setCol2(prevHead.getCol1() + 1);
             } else // down
             {
-                newHead.row1 = prevHead.row2;
-                newHead.row2 = prevHead.row2;
-                newHead.col1 = prevHead.col1 + 1;
-                newHead.col2 = prevHead.col1 + 1;
+                newHead.setRow1(prevHead.getRow2());
+                newHead.setRow2(prevHead.getRow2());
+                newHead.setCol1(prevHead.getCol1() + 1);
+                newHead.setCol2(prevHead.getCol1() + 1);
             }
             break;
         }
         segments.addFirst(newHead);
         SnakeSegment head = segments.getFirst();
-        if (!(checkHitBoard(head.row1, head.col1) && checkHitBoard(head.row2, head.col1) &&
-                checkHitBoard(head.row1, head.col2) && checkHitBoard(head.row2, head.col2))) {
-            return MoveResult.hitBoard;      
+        if (!(checkHitBoard(head.getRow1(), head.getCol1()) && checkHitBoard(head.getRow2(), head.getCol1())
+                && checkHitBoard(head.getRow1(), head.getCol2()) && checkHitBoard(head.getRow2(), head.getCol2()))) {
+            return MoveResult.hitBoard;
         }
-        if (isOnSnake(head.row2, head.col2, true))
+        if (isOnSnake(head.getRow2(), head.getCol2(), true))
             return MoveResult.hitSelf;
-        
-        if ((onBomb(head.row1, head.col1) || onBomb(head.row2, head.col1) ||
-                onBomb(head.row1, head.col2) || onBomb(head.row2, head.col2))) {
-            return MoveResult.onBomb;      
+
+        if ((onBomb(head.getRow1(), head.getCol1()) || onBomb(head.getRow2(), head.getCol1())
+                || onBomb(head.getRow1(), head.getCol2()) || onBomb(head.getRow2(), head.getCol2()))) {
+            return MoveResult.onBomb;
         }
 
         MoveResult outcome = MoveResult.moved;
-        
+
         for (int i = 0; i < food.size(); i++) {
-            if (inRadius(head.col1, food.get(i).getCol(), head.row1, food.get(i).getRow(), Game.foodRadii)
-                    || inRadius(head.col2, food.get(i).getCol(), head.row2, food.get(i).getRow(), Game.foodRadii)) {
+            if (inRadius(head.getCol1(), food.get(i).getCol(), head.getRow1(), food.get(i).getRow(), Game.foodRadii)
+                    || inRadius(head.getCol2(), food.get(i).getCol(), head.getCol2(), food.get(i).getRow(),
+                            Game.foodRadii)) {
                 Game.score += food.get(i).getScore();
                 for (int m = -Game.foodRadii / 2; m <= Game.foodRadii / 2; m++) {
                     for (int j = -Game.foodRadii / 2; j <= Game.foodRadii / 2; j++) {
@@ -415,7 +422,7 @@ public class Snake {
     MoveResult moveUp() {
         SnakeSegment head = segments.getFirst();
         MoveResult outcome = MoveResult.moved;
-        switch (head.dir) {
+        switch (head.getDir()) {
         case UP:
             outcome = expandHead();
             shrinkTail();
@@ -437,7 +444,7 @@ public class Snake {
     MoveResult moveDown() {
         SnakeSegment head = segments.getFirst();
         MoveResult outcome = MoveResult.moved;
-        switch (head.dir) {
+        switch (head.getDir()) {
         case UP:
             break;
         case DOWN:
@@ -459,7 +466,7 @@ public class Snake {
     MoveResult moveLeft() {
         SnakeSegment head = segments.getFirst();
         MoveResult outcome = MoveResult.moved;
-        switch (head.dir) {
+        switch (head.getDir()) {
         case UP:
             outcome = newHead();
             shrinkTail();
@@ -481,7 +488,7 @@ public class Snake {
     MoveResult moveRight() {
         SnakeSegment head = segments.getFirst();
         MoveResult outcome = MoveResult.moved;
-        switch (head.dir) {
+        switch (head.getDir()) {
         case UP:
             outcome = newHead();
             shrinkTail();
@@ -500,7 +507,7 @@ public class Snake {
         return outcome;
     }
 
-    public boolean inRadiusBomb(int x, int y, int bombNumber) {
+    private boolean inRadiusBomb(int x, int y, int bombNumber) {
         int x1 = Game.bombList.get(bombNumber).getX() + Game.bombRadii / 2;
         int y1 = Game.bombList.get(bombNumber).getY() + Game.bombRadii / 2;
         if ((x - x1) * (x - x1) + (y - y1) * (y - y1) < Game.bombList.get(bombNumber).getBlastRadius()
@@ -515,39 +522,23 @@ public class Snake {
         Iterator<SnakeSegment> it = segments.iterator();
         while (it.hasNext()) {
             SnakeSegment temp = it.next();
-            switch (temp.dir) {
-            case UP: {
-                for (int i = temp.row1; i <= temp.row2; i++) {
-                    for (int j = 0; j <= Game.snakeRadii; j++) {
-                        if (inRadiusBomb(temp.col1 + j, i, bombNumber)) {
-                            return true;
-                        }
-                    }
-                }
-            }
+            switch (temp.getDir()) {
+            case UP:
             case DOWN: {
-                for (int i = temp.row1; i <= temp.row2; i++) {
+                for (int i = temp.getRow1(); i <= temp.getRow2(); i++) {
                     for (int j = 0; j <= Game.snakeRadii; j++) {
-                        if (inRadiusBomb(temp.col1 + j, i, bombNumber)) {
+                        if (inRadiusBomb(temp.getCol1() + j, i, bombNumber)) {
                             return true;
                         }
                     }
                 }
             }
-            case LEFT: {
-                for (int i = temp.col1; i <= temp.col2; i++) {
-                    for (int j = 0; j <= Game.snakeRadii; j++) {
-                        if (inRadiusBomb(i, temp.row1 + j, bombNumber)) {
-                            return true;
-                        }
-                    }
-                }
-
-            }
+                break;
+            case LEFT:
             case RIGHT: {
-                for (int i = temp.col1; i <= temp.col2; i++) {
+                for (int i = temp.getCol1(); i <= temp.getCol2(); i++) {
                     for (int j = 0; j <= Game.snakeRadii; j++) {
-                        if (inRadiusBomb(i, temp.row1 + j, bombNumber)) {
+                        if (inRadiusBomb(i, temp.getRow1() + j, bombNumber)) {
                             return true;
                         }
                     }
