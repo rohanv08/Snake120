@@ -83,20 +83,29 @@ public class Game {
     public static void main(String[] args) {
         final JFrame f = new JFrame("Snake Game");
         Container pane = f.getContentPane();
-        pane.setLayout(new BoxLayout(pane, BoxLayout.Y_AXIS));
+        BoxLayout boxLayout = new BoxLayout(pane, BoxLayout.Y_AXIS);
+        pane.setLayout(boxLayout);
         pane.add(Box.createVerticalStrut(20));
-        JLabel title = new JLabel("Snacking Snake");
+        JLabel title = new JLabel("SNAKE");
         Font labelFont = title.getFont();
         title.setFont(new Font(labelFont.getName(), Font.PLAIN, 20));
+        title.setAlignmentX(Component.CENTER_ALIGNMENT);
         pane.add(title);
         pane.add(Box.createVerticalStrut(20));
         JTextArea instructions = new JTextArea();
-        instructions.setText("ADD INSTRUCTIONS HERE");
+        instructions.setText(
+                "Instructions: \n 1. Use the arrow keys to change the snake's direction. \n 2. Eat food to grow and gain points. \n 3. Beware of bombs, especially the blinking ones! If I were you,  I wouldn't even go near them. \n 4."
+                        + "Press S to save and exit the game. \n"
+                        + "\nYour Objective: Eat as many food bits as you can! \n \nPro-tip about the bombs:"
+                        + "bombs get activated only if there is a connection between a dormant bomb and a bomb that just blasted! \n \nGood luck!");
         instructions.setAlignmentX(Component.CENTER_ALIGNMENT);
         instructions.setEditable(false);
+        instructions.setLineWrap(true);
+        instructions.setWrapStyleWord(true);
         pane.add(instructions);
         pane.add(Box.createVerticalStrut(20));
         JButton button = new JButton("Start New Game");
+        button.setAlignmentX(Component.CENTER_ALIGNMENT);
         button.addActionListener(new ActionListener() {
 
             @Override
@@ -115,6 +124,7 @@ public class Game {
         pane.add(button);
         pane.add(Box.createVerticalStrut(20));
         button = new JButton("Load Saved Game");
+        button.setAlignmentX(Component.CENTER_ALIGNMENT);
         button.addActionListener(new ActionListener() {
 
             @Override
@@ -139,20 +149,21 @@ public class Game {
         });
         pane.add(button);
         pane.add(Box.createVerticalStrut(20));
-        f.setSize(W, H + 30);
+        f.setSize(W, H + 40);
         f.setVisible(true);
 
     }
 
     public static void StartTheGame(boolean Load) {
         JFrame f = new JFrame("Snake Game");
-        f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
         f.setSize(W, H + 30);
-        for (int i =0; i < H; i++) {
+        for (int i = 0; i < H; i++) {
             for (int j = 0; j < W; j++) {
                 occupancyMatrix[i][j] = 0;
             }
         }
+        prevScore = 0;
         score = 0;
         bombs = false;
         dead = false;
@@ -172,6 +183,8 @@ public class Game {
                 FileReader reader = new FileReader(file);
                 BufferedReader buffer = new BufferedReader(reader);
                 String s = buffer.readLine();
+                prevScore = Integer.parseInt(s);
+                s = buffer.readLine();
                 score = Integer.parseInt(s);
                 s = buffer.readLine();
                 LinkedList<SnakeSegment> segments = new LinkedList<SnakeSegment>();
@@ -241,7 +254,19 @@ public class Game {
                 buffer.close();
 
             } catch (Exception e) {
-                System.out.println(e);
+                int input = JOptionPane.showOptionDialog(null,
+                        "Saved game data corrupted! Would you like to play a new game instead?", "Snake",
+                        JOptionPane.OK_OPTION, JOptionPane.INFORMATION_MESSAGE, null, null, null);
+                if (input == JOptionPane.OK_OPTION) {
+                    prevScore = 0;
+                    score = 0;
+                    bombs = false;
+                    dead = false;
+                    snake = new Snake();
+                    bombList = new LinkedList<Bomb>();
+                } else {
+                    System.exit(0);
+                }
             }
         }
         f.repaint();
@@ -273,6 +298,8 @@ public class Game {
                         try {
                             FileWriter writer = new FileWriter("save.txt", false);
                             BufferedWriter buffer = new BufferedWriter(writer);
+                            buffer.write(Integer.toString(prevScore));
+                            buffer.newLine();
                             buffer.write(Integer.toString(score));
                             buffer.newLine();
                             buffer.write(Integer.toString(snake.getSegments().size()));
@@ -341,8 +368,10 @@ public class Game {
 
                             buffer.close();
                             f.dispatchEvent(new WindowEvent(f, WindowEvent.WINDOW_CLOSING));
+                            System.exit(0);
                         } catch (Exception e3) {
                             System.out.println(e3);
+                            System.exit(0);
                         }
                     }
                 default:
@@ -351,7 +380,7 @@ public class Game {
 
             @Override
             public void keyReleased(KeyEvent e) {
-                // TODO Auto-generated method stub
+
             }
         });
 
@@ -431,9 +460,7 @@ public class Game {
             MoveResult outcome = snake.moveSnake();
             if (outcome == MoveResult.hitSelf || outcome == MoveResult.hitBoard || dead
                     || outcome == MoveResult.onBomb) {
-   
 
-                
                 for (int i = 0; i <= 20; i++) {
                     try {
                         f.repaint();
@@ -443,20 +470,19 @@ public class Game {
                     }
 
                 }
-                int input = JOptionPane.showOptionDialog(null, "Game Over. " + "Your score: " + score + "\n" + "Would you like to give it another try?", "Snake",
-                        JOptionPane.OK_OPTION, JOptionPane.INFORMATION_MESSAGE, null, null, null);
+                int input = JOptionPane.showOptionDialog(null,
+                        "Game Over. " + "Your score: " + score + "\n" + "Would you like to give it another try?",
+                        "Snake", JOptionPane.OK_OPTION, JOptionPane.INFORMATION_MESSAGE, null, null, null);
                 if (input == JOptionPane.OK_OPTION) {
                     new Thread(new Runnable() {
 
                         @Override
                         public void run() {
-                          
+                            f.dispatchEvent(new WindowEvent(f, WindowEvent.WINDOW_CLOSING));
                             StartTheGame(false);
-                            
                         }
                     }).start();
-                   
-                    
+
                 } else {
                     System.exit(0);
                 }
